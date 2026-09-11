@@ -1,0 +1,113 @@
+{
+  "id": "policy-default-v1",
+  "version": 1,
+  "description": "Default reference security policy for autonomous engineering agent containment covering Master Spec §8.",
+  "rules": [
+    {
+      "principal": "agent:*",
+      "action": "repo.read",
+      "resource": "repo://workspace/**",
+      "effect": "allow",
+      "conditions": {
+        "scope": "project"
+      },
+      "description": "Read project repository within defined task scope."
+    },
+    {
+      "principal": "agent:coder",
+      "action": "repo.write",
+      "resource": "repo://workspace/branch/task/*",
+      "effect": "allow",
+      "conditions": {
+        "branch_prefix": "task/"
+      },
+      "description": "Write code strictly to isolated task branch and workspace."
+    },
+    {
+      "principal": "agent:*",
+      "action": "terminal.execute",
+      "resource": "sandbox://ephemeral",
+      "effect": "allow",
+      "conditions": {
+        "sandboxed": true,
+        "enforce_resource_limits": true
+      },
+      "description": "Execute terminal commands strictly inside ephemeral sandbox under resource limits."
+    },
+    {
+      "principal": "agent:*",
+      "action": "network.egress",
+      "resource": "net://*",
+      "effect": "deny",
+      "conditions": {
+        "allowlist": []
+      },
+      "description": "Deny external outbound network egress by default; require explicit domain allowlist."
+    },
+    {
+      "principal": "*",
+      "action": "network.bind_inbound",
+      "resource": "net://*",
+      "effect": "deny",
+      "conditions": {},
+      "description": "Strictly prohibit opening inbound listening ports. Zero exceptions."
+    },
+    {
+      "principal": "agent:*",
+      "action": "secrets.access",
+      "resource": "vault://secrets/*",
+      "effect": "allow",
+      "conditions": {
+        "just_in_time": true,
+        "narrow_scope": true,
+        "redacted_in_logs": true
+      },
+      "description": "Secrets accessed just-in-time, scoped to current execution, and redacted from telemetry."
+    },
+    {
+      "principal": "agent:*",
+      "action": "git.protected_merge",
+      "resource": "repo://branches/main",
+      "effect": "allow",
+      "conditions": {
+        "requires_approval": true,
+        "approval_type": "human_operator"
+      },
+      "description": "Merging into protected branches requires an active, verified human Approval object."
+    },
+    {
+      "principal": "agent:*",
+      "action": "deploy.production",
+      "resource": "env://production",
+      "effect": "allow",
+      "conditions": {
+        "requires_approval": true,
+        "approval_type": "human_operator"
+      },
+      "description": "Deploying to production infrastructure strictly requires a verified human Approval object."
+    },
+    {
+      "principal": "agent:*",
+      "action": "compute.paid",
+      "resource": "provider://paid_tier/*",
+      "effect": "allow",
+      "conditions": {
+        "check_budget_ceiling": true,
+        "requires_approval": true
+      },
+      "description": "Escalation to paid inference or compute requires quota check and explicit human Approval."
+    },
+    {
+      "principal": "agent:*",
+      "action": "system.destructive_op",
+      "resource": "*",
+      "effect": "allow",
+      "conditions": {
+        "requires_approval": true,
+        "approval_type": "human_operator"
+      },
+      "description": "Destructive operations (e.g. database drop, volume prune, history rewrite) require explicit Approval."
+    }
+  ]
+}
+
