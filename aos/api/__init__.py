@@ -1,0 +1,1 @@
+"""AOS FastAPI application layer."""

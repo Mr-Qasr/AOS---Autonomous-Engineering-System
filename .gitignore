@@ -39,3 +39,7 @@ data/
 artifacts/
 logs/
 *.log
+
+# Local non-repository artifacts (not part of any AOS phase)
+.continue/
+AOS_ENTIRE_CODEBASE.txt
